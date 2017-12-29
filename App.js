@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { DrawerNavigator  } from 'react-navigation';
+import { DrawerNavigator, StackNavigator  } from 'react-navigation';
 import { Icon } from 'react-native-elements';
 
 // Import components
@@ -8,6 +8,8 @@ import HomeScreen from './components/HomeScreen';
 import AddExpense from './components/AddExpense';
 import AddRegular from './components/AddRegular';
 import EditCategory from './components/EditCategory';
+import EditExpense from './components/EditExpense';
+import PreviousMonth from './components/PreviousMonth';
 
 const SpendTrackr = DrawerNavigator({
   Home: {
@@ -21,22 +23,12 @@ const SpendTrackr = DrawerNavigator({
     },
   },
   Previous: {
-    screen: HomeScreen,
+    screen: PreviousMonth,
     navigationOptions: {
       drawerLabel: 'Previous Months',
       drawerIcon: ({ tintColor, focused }) => (
         <Icon
         name='date-range' />
-      ),
-    },
-  },
-  Stats: {
-    screen: HomeScreen,
-    navigationOptions: {
-      drawerLabel: 'Statistics',
-      drawerIcon: ({ tintColor, focused }) => (
-        <Icon
-        name='insert-chart' />
       ),
     },
   },
@@ -69,6 +61,12 @@ const SpendTrackr = DrawerNavigator({
         name='edit' />
       ),
     },
+  },
+  EditExpense: {
+    screen: EditExpense,
+    navigationOptions: {
+      drawerLabel: () => null
+    }
   },
 });
 

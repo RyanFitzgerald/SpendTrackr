@@ -12,6 +12,12 @@ export default class DatePicker extends Component {
       isDateTimePickerVisible: false,
     };
   }
+
+  componentDidMount() {
+    if (this.props.defaultDate) {
+      this.setState({ theDate: moment(this.props.defaultDate).format('MMMM D, YYYY') });
+    }
+  }
  
   _showDateTimePicker = () => this.setState({ isDateTimePickerVisible: true });
  

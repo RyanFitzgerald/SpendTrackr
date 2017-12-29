@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Alert, ScrollView, View, Text, AsyncStorage, ToastAndroid } from 'react-native';
+import { StyleSheet, Alert, ScrollView, View, Text, TextInput, Picker, AsyncStorage, ToastAndroid } from 'react-native';
 import { Header, Button, Card } from 'react-native-elements';
 import Swipeout from 'react-native-swipeout';
 import {VictoryPie} from 'victory-native';
@@ -7,25 +7,28 @@ import moment from 'moment';
 
 const pieColours = ['#1abc9c', '#3498db', '#9b59b6', '#1abc9c', '#34495e', '##e67e22', '#d35400', '#c0392b'];
 
-class HomeScreen extends React.Component {
+class PreviousMonth extends React.Component {
   constructor() {
     super();
 
     // Bind functions
     this.renderList = this.renderList.bind(this);
-    this.renderChart = this.renderChart.bind(this);
     this.getExpenses = this.getExpenses.bind(this);
     this.updateExpenses = this.updateExpenses.bind(this);
     this.getCategories = this.getCategories.bind(this);
     this.getCurrentMonth = this.getCurrentMonth.bind(this);
     this.getTotal = this.getTotal.bind(this);
     this.getChartData = this.getChartData.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
 
     // Set state
     this.state = {
       month: moment().format('MMMM'),
-      total: 1,
+      selectedMonth: moment().format('MMMM'),
+      year: moment().format('YYYY'),
+      selectedYear: moment().format('YYYY'),
+      total: 0,
       expenses: [],
       monthExpenses: [],
       categories: [],
@@ -76,9 +79,9 @@ class HomeScreen extends React.Component {
   }
 
   getCurrentMonth(expenses) {
+    const currentMonth = `${this.state.month} ${this.state.year}`;
     const monthExpenses = expenses.filter(expense => {
-      const expenseMonth = moment(expense.date).format('MMMM');
-      const currentMonth = moment().format('MMMM');
+      const expenseMonth = moment(expense.date).format('MMMM YYYY');
       return expenseMonth === currentMonth;
     });
 
@@ -127,16 +130,27 @@ class HomeScreen extends React.Component {
     // Form data
     categoryTotals.forEach(categoryTotal => {
       let percent = (categoryTotal.total/this.state.total)*100;
-      if (isNaN(percent)) {
-        console.log('here');
-        percent = 0;
-      }
       let dataEntry = {'x': `${categoryTotal.category} (${percent.toFixed(1)}%)`, 'y': percent};
       chartData.push(dataEntry);
     });
 
     // Return chartdata
     this.setState({chartData});
+  }
+
+  handleSubmit() {
+    // Check the year
+    if (!this.state.selectedYear.match(/^\d{4}$/)) {
+      Alert.alert('Invalid year, digits only (ex: 2017).');
+      return;
+    }
+
+    this.setState({
+      year: this.state.selectedYear,
+      month: this.state.selectedMonth
+    }, () => {
+      this.getCurrentMonth(this.state.expenses)
+    });
   }
 
   // Handle delete
@@ -146,28 +160,6 @@ class HomeScreen extends React.Component {
     this.setState({ expenses: newExpenses }, () => {
       this.updateExpenses();
     });
-  }
-
-  renderChart() {
-    const data = this.getChartData();
-    if (data.length === 0) {
-      return (
-        <View>
-          <Text>No data to display. Start by adding a new expense.</Text>
-        </View>
-      );
-    }
-
-    console.log(data);
-    return (
-      <VictoryPie 
-        colorScale={pieColours}
-        labelRadius={80}
-        style={{ labels: { fill: '#000' } }}
-        animate={false}
-        data={data}
-      />
-    );
   }
 
   renderList(item, key) {
@@ -203,24 +195,53 @@ class HomeScreen extends React.Component {
 
   render() {
     const { navigate } = this.props.navigation;
+    const currentDate = moment();
+    const years = [currentDate.format('YYYY')];
+    for (let i = 1; i < 10; i++) {
+      years.push(currentDate.subtract(1, 'years').format('YYYY'));
+    }
 
     return (
      <View style={{flex: 1}}>
         <Header
           leftComponent={{ icon: 'menu', color: '#fff', onPress: () => navigate('DrawerToggle') }}
-          centerComponent={{ text: 'Home', style: { color: '#fff' } }}
-          rightComponent={{ icon: 'add', color: '#fff', onPress: () => navigate('AddExpense') }}
+          centerComponent={{ text: 'Previous Months', style: { color: '#fff' } }}
+          rightComponent={{ icon: 'home', color: '#fff', onPress: () => navigate('Home') }}
           backgroundColor="#3498db"
         />
         <ScrollView style={{paddingBottom: 20}}>
-          <Text style={styles.title}>{this.state.month}</Text>
+          <Card title="Select Month and Year" containerStyle={{marginBottom: 20}}>
+            <Text style={styles.label}>Month</Text>
+            <Picker
+              style={styles.picker}
+              selectedValue={this.state.selectedMonth}
+              onValueChange={selectedMonth => this.setState({selectedMonth})}
+            >
+              <Picker.Item label="January" value="January" />
+              <Picker.Item label="February" value="February" />
+              <Picker.Item label="March" value="March" />
+              <Picker.Item label="April" value="April" />
+              <Picker.Item label="May" value="May" />
+              <Picker.Item label="June" value="June" />
+              <Picker.Item label="July" value="July" />
+              <Picker.Item label="August" value="August" />
+              <Picker.Item label="September" value="September" />
+              <Picker.Item label="October" value="October" />
+              <Picker.Item label="November" value="November" />
+              <Picker.Item label="December" value="December" />
+            </Picker>
+            <Text style={styles.label}>Year</Text>
+            <Picker
+              style={styles.picker}
+              selectedValue={this.state.selectedYear}
+              onValueChange={selectedYear => this.setState({selectedYear})}
+            >
+              {years.map((year, key) => <Picker.Item label={year} value={year} key={key} />)}
+            </Picker>
+            <Button title="View Month" backgroundColor="#3498db" onPress={this.handleSubmit}/>
+          </Card>
+          <Text style={styles.title}>{this.state.month} {this.state.year}</Text>
           <Text style={styles.subtitle}>${(this.state.total/100).toFixed(2)}</Text>
-          <Button
-            onPress={() => navigate('AddExpense')}
-            backgroundColor="#3498db"
-            title="Add New Expense"
-            style={{marginBottom: 30}}
-          />
           <Card containerStyle={styles.chart} pointerEvents="none">
             {this.state.chartData.length > 0 ? (
               <VictoryPie 
@@ -246,6 +267,29 @@ class HomeScreen extends React.Component {
 };
 
 const styles = StyleSheet.create({
+  label: {
+    fontWeight: 'bold',
+    fontSize: 20,
+    marginBottom: 15,
+  },
+  textInput: {
+    fontSize: 15,
+    height: 50,
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#eee',
+    marginBottom: 30,
+  },
+  picker: {
+    height: 50,
+    paddingTop: 10,
+    paddingBottom: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#eee',
+    marginBottom: 30,
+  },
   chart: {
     marginBottom: 20,
     flex: 1,
@@ -290,5 +334,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default HomeScreen;
+export default PreviousMonth;
 

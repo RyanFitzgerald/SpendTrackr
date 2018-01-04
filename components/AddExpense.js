@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Alert, View, ScrollView, Text, TextInput, Picker, AsyncStorage, ToastAndroid } from 'react-native';
+import { StyleSheet, Alert, View, ScrollView, Text, TextInput, Picker, AsyncStorage, ToastAndroid, StatusBar } from 'react-native';
 import { Card, Button, Header } from 'react-native-elements'
 import moment from 'moment';
 import uuidv1 from 'uuid/v1';
@@ -159,12 +159,18 @@ class AddExpense extends Component {
     const { navigate } = this.props.navigation;
 
     return (
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, backgroundColor: '#fff'}}>
+        <StatusBar
+          backgroundColor="#2c709d"
+          barStyle="light-content"
+          translucent={false}
+        />
         <Header
           leftComponent={{ icon: 'menu', color: '#fff', onPress: () => navigate('DrawerToggle') }}
           centerComponent={{ text: 'Add New Expense', style: { color: '#fff' } }}
           rightComponent={{ icon: 'home', color: '#fff', onPress: () => navigate('Home') }}
           backgroundColor="#3498db"
+          outerContainerStyles={{height: 55}}
         />
         <ScrollView>
           <Card title="Add Expense" containerStyle={styles.card}>

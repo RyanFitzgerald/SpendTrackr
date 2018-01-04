@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Alert, View, ScrollView, Text, TextInput, Picker, AsyncStorage, ToastAndroid, ActivityIndicator } from 'react-native';
+import { StyleSheet, Alert, View, ScrollView, Text, TextInput, Picker, AsyncStorage, ToastAndroid, ActivityIndicator, StatusBar } from 'react-native';
 import { Card, Button, Header } from 'react-native-elements'
 import moment from 'moment';
 import uuidv1 from 'uuid/v1';
@@ -35,6 +35,7 @@ class AddExpense extends Component {
     this.getExpenses();
     this.getCategories();
 
+    // Set initial states
     if(this.props.navigation.state.params) {
       const item = this.props.navigation.state.params.item;
       const id = item.id;
@@ -47,7 +48,6 @@ class AddExpense extends Component {
     }
   }
 
-  // Add expense
   async getExpenses() {
     try {
       const value = await AsyncStorage.getItem('@SpendTrackr:expenses');
@@ -60,7 +60,6 @@ class AddExpense extends Component {
     }
   }
 
-  // Add expense
   async updateExpenses() {
     try {
       await AsyncStorage.setItem('@SpendTrackr:expenses', JSON.stringify(this.state.expenses));
@@ -70,7 +69,6 @@ class AddExpense extends Component {
     }
   }
 
-  // Get categories
   async getCategories() {
     try {
       const value = await AsyncStorage.getItem('@SpendTrackr:categories');
@@ -83,8 +81,8 @@ class AddExpense extends Component {
     }
   }
 
-  // Check Input
   checkInput() {
+    // Check if all inputs have been filled
     return (
       !this.state.expenseName || this.state.expenseName.length === 0 ||
       !this.state.cost || this.state.cost.length === 0 ||
@@ -92,26 +90,26 @@ class AddExpense extends Component {
     );
   }
 
-  // Check cost
   checkCost(cost) {
+    // Check that cost contains valid characters
     if (cost.includes(',') || cost.includes(' ') || cost.includes('-')) {
       Alert.alert('Invalid character, only use digits and decimals.');
       return;
     }
 
+    // Update cost state
     this.setState({ cost });
   }
 
-  // Set date from datepicker
   setDate(date) {
+    // Update the date from the datepicker
     this.setState({ date });
   }
 
-  // Handle submit
   handleSubmit() {
     const { navigate } = this.props.navigation;
 
-    // Check all inputs
+    // Check all inputs are filled
     if (this.checkInput()) {
       Alert.alert('All fields must be filled.');
       return;
@@ -137,7 +135,11 @@ class AddExpense extends Component {
         return expense;
       }
     });
+
+    // Push toast
     ToastAndroid.showWithGravityAndOffset('Successfully updated expense',ToastAndroid.LONG, ToastAndroid.BOTTOM, 0, 50);
+
+    // Update expenses and navigate to home page
     this.setState({expenses: newExpenses }, () => {
       this.updateExpenses();
       navigate('Home');
@@ -156,12 +158,18 @@ class AddExpense extends Component {
     }
 
     return (
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, backgroundColor: '#fff'}}>
+        <StatusBar
+          backgroundColor="#2c709d"
+          barStyle="light-content"
+          translucent={false}
+        />
         <Header
           leftComponent={{ icon: 'menu', color: '#fff', onPress: () => navigate('DrawerToggle') }}
           centerComponent={{ text: 'Edit Expense', style: { color: '#fff' } }}
           rightComponent={{ icon: 'home', color: '#fff', onPress: () => navigate('Home') }}
           backgroundColor="#3498db"
+          outerContainerStyles={{height: 55}}
         />
         <ScrollView>
           <Card title="Edit Expense" containerStyle={styles.card}>
@@ -183,7 +191,6 @@ class AddExpense extends Component {
               defaultValue={this.state.cost}
             />
             <Text style={styles.label}>Date</Text>
-            {console.log(`Test: ${this.state.date}`)}
             <DatePicker setDate={this.setDate} defaultDate={this.state.date}/>
             <Text style={styles.label}>Category</Text>
             <Picker
@@ -227,12 +234,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eee',
     marginBottom: 30,
-  },
-  separate: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center'
   },
   card: {
     marginBottom: 20

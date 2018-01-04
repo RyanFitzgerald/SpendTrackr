@@ -1,5 +1,27 @@
 {
   "expo": {
-    "sdkVersion": "23.0.0"
+    "name": "SpendTrackr",
+    "slug": "spendtrackr",
+    "version": "0.3.0",
+    "privacy": "public",
+    "description": "Easily track and categorize your expenses",
+    "android": {
+      "package": "com.ryanfitzgerald.spendtrackr",
+	  "versionCode": 3,
+	  "permissions": []
+    },
+    "sdkVersion": "23.0.0",
+    "githubUrl": "https://github.com/RyanFitzgerald/SpendTrackr",
+    "primaryColor": "#3498db",
+    "platforms": ["android"],
+    "androidStatusBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#3498db"
+    },
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#3498db"
+    }
   }
 }

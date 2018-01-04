@@ -1,11 +1,19 @@
 import React from 'react';
-import { StyleSheet, Alert, ScrollView, View, Text, TextInput, Picker, AsyncStorage, ToastAndroid } from 'react-native';
+import { StyleSheet, Alert, ScrollView, View, Text, TextInput, Picker, AsyncStorage, ToastAndroid, StatusBar } from 'react-native';
 import { Header, Button, Card } from 'react-native-elements';
 import Swipeout from 'react-native-swipeout';
-import {VictoryPie} from 'victory-native';
+import {VictoryPie, VictoryLegend, VictoryLabel} from 'victory-native';
 import moment from 'moment';
 
-const pieColours = ['#1abc9c', '#3498db', '#9b59b6', '#1abc9c', '#34495e', '##e67e22', '#d35400', '#c0392b'];
+const pieColours = ['#3498db', '#2ecc71', '#9b59b6', '#e67e22', '#f1c40f', '#e74c3c', '#16a085', '#bdc3c7', '#2980b9', '#7f8c8d'];
+
+const compareDates = (a, b) => {
+  if (moment(a.date).isBefore(b.date))
+    return 1;
+  if (moment(a.date).isAfter(b.date))
+    return -1;
+  return 0;
+};
 
 class PreviousMonth extends React.Component {
   constructor() {
@@ -32,7 +40,8 @@ class PreviousMonth extends React.Component {
       expenses: [],
       monthExpenses: [],
       categories: [],
-      chartData: []
+      chartData: [],
+      chartLegend: []
     };
   }
 
@@ -85,6 +94,8 @@ class PreviousMonth extends React.Component {
       return expenseMonth === currentMonth;
     });
 
+    monthExpenses.sort(compareDates);
+
     this.setState({ monthExpenses }, () => {
       this.getTotal();
     });
@@ -103,6 +114,7 @@ class PreviousMonth extends React.Component {
 
   getChartData() {
     let chartData = [];
+    let chartLegend = [];
 
     // Get categories
     let categories = [];  
@@ -128,14 +140,16 @@ class PreviousMonth extends React.Component {
     });
 
     // Form data
-    categoryTotals.forEach(categoryTotal => {
+    categoryTotals.forEach((categoryTotal, key) => {
       let percent = (categoryTotal.total/this.state.total)*100;
       let dataEntry = {'x': `${categoryTotal.category} (${percent.toFixed(1)}%)`, 'y': percent};
+      let legendEntry = {'name': `${categoryTotal.category} ($${(categoryTotal.total/100).toFixed(2)})`, 'symbol': {'fill': pieColours[key], 'type': 'square'}};
       chartData.push(dataEntry);
+      chartLegend.push(legendEntry);
     });
 
     // Return chartdata
-    this.setState({chartData});
+    this.setState({chartData, chartLegend});
   }
 
   handleSubmit() {
@@ -202,12 +216,18 @@ class PreviousMonth extends React.Component {
     }
 
     return (
-     <View style={{flex: 1}}>
+     <View style={{flex: 1, backgroundColor: '#fff'}}>
+        <StatusBar
+          backgroundColor="#2c709d"
+          barStyle="light-content"
+          translucent={false}
+        />
         <Header
           leftComponent={{ icon: 'menu', color: '#fff', onPress: () => navigate('DrawerToggle') }}
           centerComponent={{ text: 'Previous Months', style: { color: '#fff' } }}
           rightComponent={{ icon: 'home', color: '#fff', onPress: () => navigate('Home') }}
           backgroundColor="#3498db"
+          outerContainerStyles={{height: 55}}
         />
         <ScrollView style={{paddingBottom: 20}}>
           <Card title="Select Month and Year" containerStyle={{marginBottom: 20}}>
@@ -244,13 +264,25 @@ class PreviousMonth extends React.Component {
           <Text style={styles.subtitle}>${(this.state.total/100).toFixed(2)}</Text>
           <Card containerStyle={styles.chart} pointerEvents="none">
             {this.state.chartData.length > 0 ? (
-              <VictoryPie 
-                colorScale={pieColours}
-                labelRadius={80}
-                style={{ labels: { fill: '#000' } }}
-                animate={false}
-                data={this.state.chartData}
-              />
+              <View>
+                <VictoryPie 
+                  colorScale={pieColours}
+                  style={{ labels: { display: '#000' }, chart: {margin: 100} }}
+                  animate={false}
+                  labelRadius={100}
+                  data={this.state.chartData}
+                />
+                <VictoryLegend x={50} y={0}
+                  centerTitle
+                  orientation="vertical"
+                  style={{labels: {marginBottom: 0 } }}
+                  gutter={20}
+                  itemsPerRow={5}
+                  height={170}
+                  labelComponent={<VictoryLabel dy={-25}/>}
+                  data={this.state.chartLegend}
+                />
+              </View>
             ) : (
               <View>
                 <Text>No data to display. Start by adding a new expense.</Text>
@@ -300,6 +332,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 50,
     fontWeight: 'bold',
+    color: '#4a5058',
     marginTop: 10,
     marginBottom: 0,
     paddingBottom: 0,
@@ -307,6 +340,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 30,
+    color: '#4a5058',
     marginTop: -10,
     marginBottom: 10,
     textAlign: 'center',

@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { DrawerNavigator, StackNavigator  } from 'react-navigation';
+import { DrawerNavigator  } from 'react-navigation';
 import { Icon } from 'react-native-elements';
 
 // Import components

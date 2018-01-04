@@ -47,8 +47,8 @@
     cross-spawn "^5.1.0"
 
 "@expo/vector-icons@^6.2.0":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@expo/vector-icons/-/vector-icons-6.2.1.tgz#5252eed11e8863c0faf3e4f8d5006e41868d409d"
+  version "6.2.2"
+  resolved "https://registry.yarnpkg.com/@expo/vector-icons/-/vector-icons-6.2.2.tgz#441edb58a52c0f4e5b4aba1e6f8da1e87cea7e11"
   dependencies:
     lodash "^4.17.4"
     react-native-vector-icons "4.4.2"
@@ -6016,16 +6016,16 @@ vhost@~3.0.1:
   resolved "https://registry.yarnpkg.com/vhost/-/vhost-3.0.2.tgz#2fb1decd4c466aa88b0f9341af33dc1aff2478d5"
 
 victory-chart@^24.3.0:
-  version "24.3.1"
-  resolved "https://registry.yarnpkg.com/victory-chart/-/victory-chart-24.3.1.tgz#6ab97743f5bbe9f8b93938c1d2fae6cccd537ccc"
+  version "24.5.0"
+  resolved "https://registry.yarnpkg.com/victory-chart/-/victory-chart-24.5.0.tgz#c540deee8b7bb2488ca565c653db19fcfb1f6d08"
   dependencies:
     d3-voronoi "^1.1.2"
     lodash "^4.17.4"
-    victory-core "^20.2.0"
+    victory-core "^20.5.0"
 
-victory-core@^20.0.0, victory-core@^20.2.0:
-  version "20.3.0"
-  resolved "https://registry.yarnpkg.com/victory-core/-/victory-core-20.3.0.tgz#e51e3bd9794f116ebbeab4cd939e00c106f1572f"
+victory-core@^20.2.0, victory-core@^20.4.0, victory-core@^20.5.0:
+  version "20.5.0"
+  resolved "https://registry.yarnpkg.com/victory-core/-/victory-core-20.5.0.tgz#6328c0ad7793060fc5e9e0378c48e09cdf4a1ccb"
   dependencies:
     d3-ease "^1.0.0"
     d3-interpolate "^1.1.1"
@@ -6045,12 +6045,12 @@ victory-native@^0.16.1:
     victory-pie "^13.0.0"
 
 victory-pie@^13.0.0:
-  version "13.1.0"
-  resolved "https://registry.yarnpkg.com/victory-pie/-/victory-pie-13.1.0.tgz#e23fe543939ab82f05d81a321093997911ab1cc3"
+  version "13.2.0"
+  resolved "https://registry.yarnpkg.com/victory-pie/-/victory-pie-13.2.0.tgz#2da6167288ec57c562a687086d0250e79f1a92d2"
   dependencies:
     d3-shape "^1.0.0"
     lodash "^4.17.4"
-    victory-core "^20.0.0"
+    victory-core "^20.4.0"
 
 vinyl@^0.5.0:
   version "0.5.3"

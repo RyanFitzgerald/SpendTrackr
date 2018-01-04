@@ -6,5 +6,4 @@ SpendTrackr is a basic budgeting app that was built in React-Native (built prima
 
 - Add Statistics for spending over time
 - Add ability to download a month to CSV to device
-- List items by date (newest first)
 - Clean up code (D.R.Y, etc.)

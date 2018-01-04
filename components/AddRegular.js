@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Alert, View, ScrollView, Text, TextInput, Picker, AsyncStorage, ToastAndroid } from 'react-native';
+import { StyleSheet, Alert, View, ScrollView, Text, TextInput, Picker, AsyncStorage, ToastAndroid, StatusBar } from 'react-native';
 import { Card, Button, Header } from 'react-native-elements'
 import Swipeout from 'react-native-swipeout';
 import uuidv1 from 'uuid/v1';
@@ -158,12 +158,18 @@ class AddRegular extends Component {
     const { navigate } = this.props.navigation;
 
     return (
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, backgroundColor: '#fff'}}>
+        <StatusBar
+          backgroundColor="#2c709d"
+          barStyle="light-content"
+          translucent={false}
+        />
         <Header
           leftComponent={{ icon: 'menu', color: '#fff', onPress: () => navigate('DrawerToggle') }}
           centerComponent={{ text: 'New Regular Expense', style: { color: '#fff' } }}
           rightComponent={{ icon: 'home', color: '#fff', onPress: () => navigate('Home') }}
           backgroundColor="#3498db"
+          outerContainerStyles={{height: 55}}
         />
         <ScrollView style={{paddingBottom: 20}}>
           <Card title="Add Regular Expense" containerStyle={styles.card}>

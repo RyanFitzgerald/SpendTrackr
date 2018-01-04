@@ -1,11 +1,19 @@
 import React from 'react';
-import { StyleSheet, Alert, ScrollView, View, Text, AsyncStorage, ToastAndroid } from 'react-native';
+import { StyleSheet, Alert, ScrollView, View, Text, AsyncStorage, ToastAndroid, StatusBar } from 'react-native';
 import { Header, Button, Card } from 'react-native-elements';
 import Swipeout from 'react-native-swipeout';
-import {VictoryPie} from 'victory-native';
+import {VictoryPie, VictoryLegend, VictoryLabel} from 'victory-native';
 import moment from 'moment';
 
-const pieColours = ['#1abc9c', '#3498db', '#9b59b6', '#1abc9c', '#34495e', '##e67e22', '#d35400', '#c0392b'];
+const pieColours = ['#3498db', '#2ecc71', '#9b59b6', '#e67e22', '#f1c40f', '#e74c3c', '#16a085', '#bdc3c7', '#2980b9', '#7f8c8d'];
+
+const compareDates = (a, b) => {
+  if (moment(a.date).isBefore(b.date))
+    return 1;
+  if (moment(a.date).isAfter(b.date))
+    return -1;
+  return 0;
+};
 
 class HomeScreen extends React.Component {
   constructor() {
@@ -13,7 +21,6 @@ class HomeScreen extends React.Component {
 
     // Bind functions
     this.renderList = this.renderList.bind(this);
-    this.renderChart = this.renderChart.bind(this);
     this.getExpenses = this.getExpenses.bind(this);
     this.updateExpenses = this.updateExpenses.bind(this);
     this.getCategories = this.getCategories.bind(this);
@@ -29,7 +36,8 @@ class HomeScreen extends React.Component {
       expenses: [],
       monthExpenses: [],
       categories: [],
-      chartData: []
+      chartData: [],
+      chartLegend: []
     };
   }
 
@@ -62,7 +70,6 @@ class HomeScreen extends React.Component {
     }
   }
 
-
   async getCategories() {
     try {
       const value = await AsyncStorage.getItem('@SpendTrackr:categories');
@@ -76,12 +83,17 @@ class HomeScreen extends React.Component {
   }
 
   getCurrentMonth(expenses) {
+    // Loop over expenses and find current month
     const monthExpenses = expenses.filter(expense => {
       const expenseMonth = moment(expense.date).format('MMMM');
       const currentMonth = moment().format('MMMM');
       return expenseMonth === currentMonth;
     });
 
+    // Sort expenses
+    monthExpenses.sort(compareDates);
+
+    // Update month state and get the new total
     this.setState({ monthExpenses }, () => {
       this.getTotal();
     });
@@ -89,10 +101,13 @@ class HomeScreen extends React.Component {
 
   getTotal() {
     let total = 0;
+
+    // Iterate over monthly expenses and sum the total
     this.state.monthExpenses.forEach(expense => {
       total += expense.cost;
     });
 
+    // Update total and get chart data
     this.setState({ total }, () => {
       this.getChartData();
     });
@@ -100,6 +115,7 @@ class HomeScreen extends React.Component {
 
   getChartData() {
     let chartData = [];
+    let chartLegend = [];
 
     // Get categories
     let categories = [];  
@@ -113,61 +129,44 @@ class HomeScreen extends React.Component {
     let categoryTotals = [];
     categories.forEach(category => {
       let categoryTotal = { category, 'total': 0 };
+
+      // Loop over each monthly expense and see if in current category
       this.state.monthExpenses.forEach(expense => {
         if (expense.category === category) {
           categoryTotal.total += expense.cost;
         }
       });
 
+      // Only push if the total is above zero
       if (categoryTotal.total > 0) {
         categoryTotals.push(categoryTotal);
       }
     });
 
     // Form data
-    categoryTotals.forEach(categoryTotal => {
+    categoryTotals.forEach((categoryTotal, key) => {
       let percent = (categoryTotal.total/this.state.total)*100;
-      if (isNaN(percent)) {
-        console.log('here');
-        percent = 0;
-      }
-      let dataEntry = {'x': `${categoryTotal.category} (${percent.toFixed(1)}%)`, 'y': percent};
+      let dataEntry = {'x': `${percent.toFixed(1)}%`, 'y': percent};
+      let legendEntry = {'name': `${categoryTotal.category} ($${(categoryTotal.total/100).toFixed(2)})`, 'symbol': {'fill': pieColours[key], 'type': 'square'}};
       chartData.push(dataEntry);
+      chartLegend.push(legendEntry);
     });
 
     // Return chartdata
-    this.setState({chartData});
+    this.setState({chartData, chartLegend});
   }
 
-  // Handle delete
   handleDelete(id) {
+    // Create new array with old expense deleted
     const newExpenses = this.state.expenses.filter(el => el.id !== id);
+
+    // Push toast
     ToastAndroid.showWithGravityAndOffset('Successfully deleted expense',ToastAndroid.LONG, ToastAndroid.BOTTOM, 0, 50);
+
+    // Update expenses
     this.setState({ expenses: newExpenses }, () => {
       this.updateExpenses();
     });
-  }
-
-  renderChart() {
-    const data = this.getChartData();
-    if (data.length === 0) {
-      return (
-        <View>
-          <Text>No data to display. Start by adding a new expense.</Text>
-        </View>
-      );
-    }
-
-    console.log(data);
-    return (
-      <VictoryPie 
-        colorScale={pieColours}
-        labelRadius={80}
-        style={{ labels: { fill: '#000' } }}
-        animate={false}
-        data={data}
-      />
-    );
   }
 
   renderList(item, key) {
@@ -205,12 +204,18 @@ class HomeScreen extends React.Component {
     const { navigate } = this.props.navigation;
 
     return (
-     <View style={{flex: 1}}>
+     <View style={{flex: 1, backgroundColor: '#fff'}}>
+        <StatusBar
+          backgroundColor="#2c709d"
+          barStyle="light-content"
+          translucent={false}
+        />
         <Header
           leftComponent={{ icon: 'menu', color: '#fff', onPress: () => navigate('DrawerToggle') }}
           centerComponent={{ text: 'Home', style: { color: '#fff' } }}
           rightComponent={{ icon: 'add', color: '#fff', onPress: () => navigate('AddExpense') }}
           backgroundColor="#3498db"
+          outerContainerStyles={{height: 55}}
         />
         <ScrollView style={{paddingBottom: 20}}>
           <Text style={styles.title}>{this.state.month}</Text>
@@ -223,13 +228,25 @@ class HomeScreen extends React.Component {
           />
           <Card containerStyle={styles.chart} pointerEvents="none">
             {this.state.chartData.length > 0 ? (
-              <VictoryPie 
-                colorScale={pieColours}
-                labelRadius={80}
-                style={{ labels: { fill: '#000' } }}
-                animate={false}
-                data={this.state.chartData}
-              />
+              <View>
+                <VictoryPie 
+                  colorScale={pieColours}
+                  style={{ labels: { display: '#000' }, chart: {margin: 100} }}
+                  animate={false}
+                  labelRadius={100}
+                  data={this.state.chartData}
+                />
+                <VictoryLegend x={50} y={0}
+                  centerTitle
+                  orientation="vertical"
+                  style={{labels: {marginBottom: 0 } }}
+                  gutter={20}
+                  itemsPerRow={5}
+                  height={170}
+                  labelComponent={<VictoryLabel dy={-25}/>}
+                  data={this.state.chartLegend}
+                />
+              </View>
             ) : (
               <View>
                 <Text>No data to display. Start by adding a new expense.</Text>
@@ -237,7 +254,7 @@ class HomeScreen extends React.Component {
             )}
           </Card>
           <Card title="Expenses" containerStyle={{marginBottom: 20}}>
-            {this.state.monthExpenses.map((expense, key) => this.renderList(expense, key))}
+            {this.state.monthExpenses.map((expense, key) => this.renderList(expense, key))}   
           </Card>
         </ScrollView>
      </View> 
@@ -256,6 +273,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 50,
     fontWeight: 'bold',
+    color: '#4a5058',
     marginTop: 10,
     marginBottom: 0,
     paddingBottom: 0,
@@ -263,6 +281,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 30,
+    color: '#4a5058',
     marginTop: -10,
     marginBottom: 10,
     textAlign: 'center',
